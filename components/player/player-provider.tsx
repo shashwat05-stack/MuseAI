@@ -183,6 +183,62 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  // Handle global keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in input, textarea, or contentEditable
+      const target = e.target as HTMLElement
+      if (
+        !target ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return
+      }
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault()
+          setVolume((v) => Math.min(1, parseFloat((v + 0.05).toFixed(2))))
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          setVolume((v) => Math.max(0, parseFloat((v - 0.05).toFixed(2))))
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          if (current) {
+            const newTime = Math.max(0, audioRef.current ? audioRef.current.currentTime - 5 : 0)
+            if (audioRef.current) audioRef.current.currentTime = newTime
+            setElapsed(newTime)
+          }
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          if (current) {
+            const newTime = Math.min(current.duration, audioRef.current ? audioRef.current.currentTime + 5 : current.duration)
+            if (audioRef.current) audioRef.current.currentTime = newTime
+            setElapsed(newTime)
+          }
+          break
+        case ' ': // Spacebar
+          if (target.tagName !== 'BUTTON' && target.tagName !== 'A') {
+            e.preventDefault()
+            togglePlay()
+          }
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [current, togglePlay])
+
   const value = useMemo<PlayerContextValue>(
     () => ({
       current,

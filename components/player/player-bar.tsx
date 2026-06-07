@@ -38,16 +38,22 @@ function Scrubber({
       aria-valuemax={100}
       tabIndex={0}
       className={cn(
-        'group relative h-1.5 cursor-pointer rounded-full bg-muted',
+        'group relative h-1.5 cursor-pointer rounded-full bg-muted outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         className,
       )}
       onClick={(e) => {
         const rect = e.currentTarget.getBoundingClientRect()
         onChange((e.clientX - rect.left) / rect.width)
+        e.currentTarget.focus()
       }}
       onKeyDown={(e) => {
-        if (e.key === 'ArrowRight') onChange(Math.min(1, value + 0.05))
-        if (e.key === 'ArrowLeft') onChange(Math.max(0, value - 0.05))
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          onChange(Math.min(1, value + 0.05))
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+          e.preventDefault()
+          onChange(Math.max(0, value - 0.05))
+        }
       }}
     >
       <div
